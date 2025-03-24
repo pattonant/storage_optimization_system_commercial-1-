@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">系统概览</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span>存储系统总数</span>
+                    <span class="badge bg-primary rounded-pill">{{ storage_systems|length }}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span>优化任务总数</span>
+                    <span class="badge bg-primary rounded-pill">{{ optimization_jobs|default(0) }}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>平均优化提升</span>
+                    <span class="badge bg-success rounded-pill">{{ average_improvement|default('0%') }}</span>
+                </div>
+            </div>
+            <div class="card-footer">
+                <a href="{{ url_for('storage_systems') }}" class="btn btn-outline-primary btn-sm">查看所有系统</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">快速操作</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('create_storage_system') }}" class="btn btn-outline-primary">创建新存储系统</a>
+                    <a href="{{ url_for('profile') }}" class="btn btn-outline-secondary">个人资料设置</a>
+                    {% if user.roles and ('admin' in user.roles or 'manager' in user.roles) %}
+                    <a href="{{ url_for('admin_monitor') }}" class="btn btn-outline-info">系统监控</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">最近的存储系统</h5>
+            </div>
+            <div class="card-body">
+                {% if storage_systems %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>名称</th>
+                                <th>硬盘空间</th>
+                                <th>令牌数</th>
+                                <th>创建时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for system in storage_systems[:5] %}
+                            <tr>
+                                <td>{{ system.name }}</td>
+                                <td>{{ system.disk_space }} GB</td>
+                                <td>{{ system.token_count }}</td>
+                                <td>{{ system.created_at|default('') }}</td>
+                                <td>
+                                    <a href="{{ url_for('storage_system_detail', system_id=system.system_id) }}" class="btn btn-sm btn-outline-primary">详情</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    您还没有创建任何存储系统。<a href="{{ url_for('create_storage_system') }}">立即创建</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">最近的优化任务</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_jobs %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>存储系统</th>
+                                <th>算法</th>
+                                <th>状态</th>
+                                <th>优化提升</th>
+                                <th>完成时间</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for job in recent_jobs %}
+                            <tr>
+                                <td>{{ job.system_name }}</td>
+                                <td>{{ job.algorithm }}</td>
+                                <td>
+                                    {% if job.status == 'completed' %}
+                                    <span class="badge bg-success">已完成</span>
+                                    {% elif job.status == 'running' %}
+                                    <span class="badge bg-warning">运行中</span>
+                                    {% elif job.status == 'failed' %}
+                                    <span class="badge bg-danger">失败</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">{{ job.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ job.improvement|default('0%') }}</td>
+                                <td>{{ job.completed_at|default('') }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    您还没有运行任何优化任务。
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

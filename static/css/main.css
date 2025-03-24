@@ -1,0 +1,326 @@
+/* 
+ * 华为云存储服务控制系统 - 商业版
+ * 主样式表
+ */
+
+:root {
+  --primary-color: #0052cc;
+  --primary-dark: #003d99;
+  --primary-light: #4d8bff;
+  --secondary-color: #6c757d;
+  --success-color: #28a745;
+  --info-color: #17a2b8;
+  --warning-color: #ffc107;
+  --danger-color: #dc3545;
+  --light-color: #f8f9fa;
+  --dark-color: #343a40;
+  --body-bg: #f5f7fa;
+  --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* 全局样式 */
+body {
+  font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+  background-color: var(--body-bg);
+  color: #333;
+  line-height: 1.6;
+}
+
+/* 导航栏样式 */
+.navbar {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand img {
+  margin-right: 10px;
+}
+
+/* 卡片样式 */
+.card {
+  border: none;
+  border-radius: 8px;
+  box-shadow: var(--card-shadow);
+  margin-bottom: 20px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+  border-radius: 8px 8px 0 0 !important;
+  font-weight: 500;
+}
+
+.card-header.bg-primary {
+  background-color: var(--primary-color) !important;
+}
+
+/* 按钮样式 */
+.btn {
+  border-radius: 6px;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  transition: all 0.2s;
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-dark);
+  border-color: var(--primary-dark);
+}
+
+.btn-outline-primary {
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+/* 表格样式 */
+.table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.table thead th {
+  background-color: #f8f9fa;
+  border-top: none;
+  border-bottom: 2px solid #dee2e6;
+  color: #495057;
+  font-weight: 600;
+}
+
+.table-hover tbody tr:hover {
+  background-color: rgba(0, 82, 204, 0.05);
+}
+
+/* 表单样式 */
+.form-control, .form-select {
+  border-radius: 6px;
+  border: 1px solid #ced4da;
+  padding: 0.5rem 0.75rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: var(--primary-light);
+  box-shadow: 0 0 0 0.25rem rgba(0, 82, 204, 0.25);
+}
+
+.form-label {
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+/* 徽章样式 */
+.badge {
+  font-weight: 500;
+  padding: 0.35em 0.65em;
+  border-radius: 6px;
+}
+
+/* 警告框样式 */
+.alert {
+  border: none;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+/* 页脚样式 */
+.footer {
+  margin-top: 3rem;
+  padding: 1.5rem 0;
+  color: #6c757d;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .card {
+    margin-bottom: 15px;
+  }
+  
+  .btn {
+    padding: 0.4rem 0.8rem;
+  }
+  
+  h1 {
+    font-size: 1.8rem;
+  }
+  
+  h2 {
+    font-size: 1.5rem;
+  }
+}
+
+/* 登录和注册页面样式 */
+.login-page, .register-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 200px);
+}
+
+/* 动画效果 */
+.fade-in {
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* 图表容器样式 */
+.chart-container {
+  position: relative;
+  margin: auto;
+  height: 300px;
+  width: 100%;
+}
+
+/* 数据可视化样式 */
+.metric-card {
+  text-align: center;
+  padding: 1.5rem;
+}
+
+.metric-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.metric-label {
+  font-size: 0.9rem;
+  color: var(--secondary-color);
+  margin-top: 0.5rem;
+}
+
+/* 加载动画 */
+.spinner {
+  width: 40px;
+  height: 40px;
+  margin: 100px auto;
+  background-color: var(--primary-color);
+  border-radius: 100%;  
+  animation: sk-scaleout 1.0s infinite ease-in-out;
+}
+
+@keyframes sk-scaleout {
+  0% { 
+    transform: scale(0);
+  } 100% {
+    transform: scale(1.0);
+    opacity: 0;
+  }
+}
+
+/* 工具提示样式 */
+.custom-tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.custom-tooltip .tooltip-text {
+  visibility: hidden;
+  width: 200px;
+  background-color: #555;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px;
+  position: absolute;
+  z-index: 1;
+  bottom: 125%;
+  left: 50%;
+  margin-left: -100px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.custom-tooltip:hover .tooltip-text {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* 暗色模式支持 */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --body-bg: #1e1e1e;
+    --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  }
+  
+  body {
+    color: #e1e1e1;
+    background-color: var(--body-bg);
+  }
+  
+  .card {
+    background-color: #2d2d2d;
+    color: #e1e1e1;
+  }
+  
+  .table thead th {
+    background-color: #333;
+    color: #e1e1e1;
+    border-bottom: 2px solid #444;
+  }
+  
+  .table td, .table th {
+    border-top: 1px solid #444;
+  }
+  
+  .form-control, .form-select {
+    background-color: #333;
+    border-color: #444;
+    color: #e1e1e1;
+  }
+  
+  .form-control:focus, .form-select:focus {
+    background-color: #333;
+    color: #e1e1e1;
+  }
+  
+  .modal-content {
+    background-color: #2d2d2d;
+    color: #e1e1e1;
+  }
+  
+  .close {
+    color: #e1e1e1;
+  }
+  
+  .footer {
+    background-color: #2d2d2d !important;
+    color: #a0a0a0;
+  }
+}

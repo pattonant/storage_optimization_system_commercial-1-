@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>{{ system.name }}</h2>
+        <p class="text-muted">{{ system.description|default('无描述') }}</p>
+    </div>
+    <div class="col-md-4 text-end">
+        <div class="btn-group" role="group">
+            <a href="{{ url_for('optimize_storage_system', system_id=system.system_id) }}" class="btn btn-success">
+                <i class="bi bi-lightning-charge"></i> 优化系统
+            </a>
+            <a href="{{ url_for('edit_storage_system', system_id=system.system_id) }}" class="btn btn-primary">
+                <i class="bi bi-pencil"></i> 编辑系统
+            </a>
+            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteSystemModal">
+                <i class="bi bi-trash"></i> 删除系统
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">系统信息</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        硬盘空间
+                        <span class="badge bg-primary rounded-pill">{{ system.disk_space }} GB</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        令牌数
+                        <span class="badge bg-primary rounded-pill">{{ system.token_count }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        对象数量
+                        <span class="badge bg-primary rounded-pill">{{ objects|default([])|length }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        创建时间
+                        <span>{{ system.created_at }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        最后更新
+                        <span>{{ system.updated_at }}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">性能指标</h5>
+            </div>
+            <div class="card-body">
+                {% if performance_metrics %}
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        当前碎片率
+                        <span class="badge bg-{{ 'success' if current_fragmentation < 30 else ('warning' if current_fragmentation < 60 else 'danger') }} rounded-pill">{{ current_fragmentation|default('0') }}%</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        平均访问时间
+                        <span>{{ avg_access_time|default('0') }} ms</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        最后优化时间
+                        <span>{{ last_optimization_time|default('从未') }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        优化次数
+                        <span class="badge bg-primary rounded-pill">{{ optimization_count|default('0') }}</span>
+                    </li>
+                </ul>
+                {% else %}
+                <div class="alert alert-info">
+                    尚无性能指标数据。请运行优化任务以生成性能指标。
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">存储对象</h5>
+                <button class="btn btn-sm btn-light" data-bs-toggle="modal" data-bs-target="#importObjectsModal">
+                    <i class="bi bi-upload"></i> 导入对象
+                </button>
+            </div>
+            <div class="card-body">
+                {% if objects %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>名称</th>
+                                <th>大小</th>
+                                <th>访问频率</th>
+                                <th>原始位置</th>
+                                <th>当前位置</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for object in objects %}
+                            <tr>
+                                <td>{{ object.object_id }}</td>
+                                <td>{{ object.name }}</td>
+                                <td>{{ object.size }} MB</td>
+                                <td>{{ object.access_frequency }}</td>
+                                <td>{{ object.original_position }}</td>
+                                <td>{{ object.current_position }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    该存储系统中还没有对象。请导入对象或创建新对象。
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">优化历史</h5>
+            </div>
+            <div class="card-body">
+                {% if optimization_jobs %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>任务ID</th>
+                                <th>算法</th>
+                                <th>状态</th>
+                                <th>优化前碎片率</th>
+                                <th>优化后碎片率</th>
+                                <th>提升</th>
+                                <th>完成时间</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for job in optimization_jobs %}
+                            <tr>
+                                <td>{{ job.job_id[:8] }}...</td>
+                                <td>{{ job.algorithm }}</td>
+                                <td>
+                                    {% if job.status == 'completed' %}
+                                    <span class="badge bg-success">已完成</span>
+                                    {% elif job.status == 'running' %}
+                                    <span class="badge bg-warning">运行中</span>
+                                    {% elif job.status == 'failed' %}
+                                    <span class="badge bg-danger">失败</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">{{ job.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ job.before_fragmentation|default('0') }}%</td>
+                                <td>{{ job.after_fragmentation|default('0') }}%</td>
+                                <td>{{ job.improvement|default('0') }}%</td>
+                                <td>{{ job.completed_at|default('') }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    该存储系统还没有运行过优化任务。
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 删除系统确认模态框 -->
+<div class="modal fade" id="deleteSystemModal" tabindex="-1" aria-labelledby="deleteSystemModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteSystemModalLabel">确认删除</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>您确定要删除存储系统 <strong>{{ system.name }}</strong> 吗？此操作不可逆，系统中的所有对象和优化历史都将被删除。</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <form action="{{ url_for('delete_storage_system', system_id=system.system_id) }}" method="post">
+                    <button type="submit" class="btn btn-danger">确认删除</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 导入对象模态框 -->
+<div class="modal fade" id="importObjectsModal" tabindex="-1" aria-labelledby="importObjectsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="importObjectsModalLabel">导入存储对象</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ url_for('import_objects', system_id=system.system_id) }}" method="post" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="objectsFile" class="form-label">选择对象文件</label>
+                        <input class="form-control" type="file" id="objectsFile" name="objectsFile" required>
+                        <div class="form-text">文件格式应为每行一个对象，包含ID、名称、大小和访问频率，以逗号分隔。</div>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">导入</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

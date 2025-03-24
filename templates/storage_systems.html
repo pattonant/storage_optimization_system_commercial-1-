@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h2>存储系统列表</h2>
+    </div>
+    <div class="col-md-6 text-end">
+        <a href="{{ url_for('create_storage_system') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> 创建新存储系统
+        </a>
+    </div>
+</div>
+
+{% if systems %}
+<div class="row">
+    {% for system in systems %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">{{ system.name }}</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>描述：</strong> {{ system.description|default('无描述') }}</p>
+                <p><strong>硬盘空间：</strong> {{ system.disk_space }} GB</p>
+                <p><strong>令牌数：</strong> {{ system.token_count }}</p>
+                <p><strong>创建时间：</strong> {{ system.created_at }}</p>
+                <p><strong>最后更新：</strong> {{ system.updated_at }}</p>
+            </div>
+            <div class="card-footer">
+                <div class="btn-group w-100" role="group">
+                    <a href="{{ url_for('storage_system_detail', system_id=system.system_id) }}" class="btn btn-outline-primary">详情</a>
+                    <a href="{{ url_for('optimize_storage_system', system_id=system.system_id) }}" class="btn btn-outline-success">优化</a>
+                    <a href="{{ url_for('edit_storage_system', system_id=system.system_id) }}" class="btn btn-outline-secondary">编辑</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-info">
+    <p>您还没有创建任何存储系统。</p>
+    <a href="{{ url_for('create_storage_system') }}" class="btn btn-primary mt-2">创建新存储系统</a>
+</div>
+{% endif %}
+{% endblock %}

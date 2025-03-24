@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>优化存储系统 - {{ system.name }}</h2>
+        <p class="text-muted">选择优化算法并设置参数，以提高存储系统性能</p>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="{{ url_for('storage_system_detail', system_id=system.system_id) }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> 返回系统详情
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-5">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">优化设置</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{{ url_for('optimize_storage_system', system_id=system.system_id) }}">
+                    <div class="mb-3">
+                        <label for="algorithm" class="form-label">优化算法</label>
+                        <select class="form-select" id="algorithm" name="algorithm" required>
+                            <option value="" selected disabled>请选择算法</option>
+                            <option value="greedy">贪心算法</option>
+                            <option value="dp">动态规划</option>
+                            <option value="heuristic">启发式搜索</option>
+                        </select>
+                        <div class="form-text">
+                            <ul>
+                                <li><strong>贪心算法</strong>: 速度快，适合大规模数据，但可能不是最优解</li>
+                                <li><strong>动态规划</strong>: 寻找最优解，但计算复杂度高</li>
+                                <li><strong>启发式搜索</strong>: 平衡速度和优化效果，适合中等规模数据</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="optimization_level" class="form-label">优化级别</label>
+                        <select class="form-select" id="optimization_level" name="optimization_level">
+                            <option value="low">低 (速度优先)</option>
+                            <option value="medium" selected>中 (平衡)</option>
+                            <option value="high">高 (质量优先)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="schedule" name="schedule">
+                        <label class="form-check-label" for="schedule">计划任务</label>
+                    </div>
+                    
+                    <div id="scheduleOptions" class="mb-3" style="display: none;">
+                        <label for="schedule_time" class="form-label">计划时间</label>
+                        <input type="datetime-local" class="form-control" id="schedule_time" name="schedule_time">
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">开始优化</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-7">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">系统信息</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                硬盘空间
+                                <span class="badge bg-primary rounded-pill">{{ system.disk_space }} GB</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                令牌数
+                                <span class="badge bg-primary rounded-pill">{{ system.token_count }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                对象数量
+                                <span class="badge bg-primary rounded-pill">{{ objects|default([])|length }}</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                当前碎片率
+                                <span class="badge bg-{{ 'success' if current_fragmentation < 30 else ('warning' if current_fragmentation < 60 else 'danger') }} rounded-pill">{{ current_fragmentation|default('0') }}%</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                平均访问时间
+                                <span>{{ avg_access_time|default('0') }} ms</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                最后优化时间
+                                <span>{{ last_optimization_time|default('从未') }}</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">历史优化效果</h5>
+            </div>
+            <div class="card-body">
+                {% if optimization_history %}
+                <div class="chart-container" style="position: relative; height:300px;">
+                    <canvas id="optimizationChart"></canvas>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    该存储系统还没有优化历史数据。
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/chart.min.js') }}"></script>
+<script>
+    // 显示/隐藏计划任务选项
+    document.getElementById('schedule').addEventListener('change', function() {
+        var scheduleOptions = document.getElementById('scheduleOptions');
+        if (this.checked) {
+            scheduleOptions.style.display = 'block';
+        } else {
+            scheduleOptions.style.display = 'none';
+        }
+    });
+    
+    {% if optimization_history %}
+    // 绘制优化历史图表
+    var ctx = document.getElementById('optimizationChart').getContext('2d');
+    var chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: {{ optimization_history.dates|tojson }},
+            datasets: [
+                {
+                    label: '碎片率 (%)',
+                    data: {{ optimization_history.fragmentation|tojson }},
+                    borderColor: 'rgb(255, 99, 132)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                    fill: true
+                },
+                {
+                    label: '性能得分',
+                    data: {{ optimization_history.scores|tojson }},
+                    borderColor: 'rgb(54, 162, 235)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                    fill: true,
+                    yAxisID: 'y1'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: '碎片率 (%)'
+                    }
+                },
+                y1: {
+                    beginAtZero: true,
+                    position: 'right',
+                    title: {
+                        display: true,
+                        text: '性能得分'
+                    },
+                    grid: {
+                        drawOnChartArea: false
+                    }
+                }
+            }
+        }
+    });
+    {% endif %}
+</script>
+{% endblock %}
